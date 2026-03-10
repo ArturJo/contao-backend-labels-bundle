@@ -24,12 +24,14 @@ $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = s
 
     // Count child elements (element_group only)
     if (($row['type'] ?? '') === 'element_group') {
-        $childCount = ContentModel::countBy(
+        $childCount = (int) ContentModel::countBy(
             ['pid=? AND ptable=? AND tstamp!=0'],
             [$row['id'], 'tl_content']
         );
         if ($childCount > 0) {
-            $parts[] = $childCount . ' ' . ($childCount === 1 ? 'Element' : 'Elemente');
+            $label_singular = $GLOBALS['TL_LANG']['tl_content']['element_group_child'] ?? 'child element';
+            $label_plural   = $GLOBALS['TL_LANG']['tl_content']['element_group_children'] ?? 'child elements';
+            $parts[] = $childCount . ' ' . ($childCount === 1 ? $label_singular : $label_plural);
         }
     }
 
@@ -39,7 +41,7 @@ $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = s
             '$1$2 <span style="opacity:.6"> | ' . implode(' | ', $parts) . '</span>$3',
             $label,
             1
-        );
+        ) ?? $label;
     }
 
     return $label;
