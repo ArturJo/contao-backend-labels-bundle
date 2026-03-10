@@ -1,3 +1,5 @@
+<img src="solidwork-logo.svg" alt="Solidwork" width="150">
+
 # Contao Backend Labels Bundle
 
 Enhances the Contao 5 backend by displaying CSS ID and CSS class directly in the labels of content elements and articles — so you can identify styled elements at a glance without opening them.
