@@ -6,6 +6,7 @@ use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 // Add showBackendLabels field to user group
 $GLOBALS['TL_DCA']['tl_user_group']['fields']['sldwrk_showBackendLabels'] = [
+    'exclude'   => false,
     'inputType' => 'checkbox',
     'eval'      => ['tl_class' => 'w50'],
     'sql'       => ['type' => 'boolean', 'default' => false],
