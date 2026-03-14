@@ -20,15 +20,24 @@ $GLOBALS['TL_DCA']['tl_article']['list']['label']['label_callback'] = static fun
     $cssHtmlId = trim($cssId[0] ?? '');
     $cssClass  = trim($cssId[1] ?? '');
 
+    $renderWords = static function(string $value, string $class): string {
+        $words = explode(' ', $value);
+        sort($words);
+        return '<code class="' . $class . '">' . implode(' ', array_map(
+            fn($w) => '<span>' . htmlspecialchars($w) . '</span>',
+            $words
+        )) . '</code>';
+    };
+
     if ($cssHtmlId !== '') {
-        $parts[] = 'cssID: <code>' . htmlspecialchars($cssHtmlId) . '</code>';
+        $parts[] = '<span>cssID:</span> ' . $renderWords($cssHtmlId, 'cssID');
     }
     if ($cssClass !== '') {
-        $parts[] = 'cssClass: <code>' . htmlspecialchars($cssClass) . '</code>';
+        $parts[] = '<span>cssClass:</span> ' . $renderWords($cssClass, 'cssClass');
     }
 
     if ($parts !== []) {
-        $label .= ' <span style="opacity:.6"> | ' . implode(' | ', $parts) . '</span>';
+        $label .= ' <span class="cssIdClass" style="opacity:.6"><span class="divider"> | </span>' . implode('<span class="divider"> | </span>', $parts) . '</span>';
     }
 
     return $label;
