@@ -3,13 +3,24 @@
 declare(strict_types=1);
 
 use Contao\ContentModel;
+use Contao\Image;
 use Contao\StringUtil;
 use Solidwork\ContaoBackendLabelsBundle\Util\BackendLabelPermission;
 
 // Show CSS ID, CSS class and additional info in backend labels for all content elements
 $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = static function (array $row): string {
-    /** @var string $label */
-    $label = (new tl_content())->addCteType($row);
+    $labelResult = (new tl_content())->addCteType($row);
+
+    if (is_array($labelResult)) {
+        [$type, $preview, $key] = $labelResult;
+        $dragHandle = '<button type="button" class="drag-handle" data-action="keydown->contao--sortable#move">' . Image::getHtml('drag.svg') . '</button>';
+        $label = '<div class="cte_type draggable ' . $key . '">' . $dragHandle . '<div>' . $type . '</div></div>';
+        if ($preview !== '') {
+            $label .= '<div class="cte_content" data-contao--limit-height-target="node"><div class="cte_preview" style="contain:paint">' . $preview . '</div></div>';
+        }
+    } else {
+        $label = $labelResult;
+    }
 
     if (!BackendLabelPermission::isGranted()) {
         return $label;
@@ -21,11 +32,20 @@ $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = s
     $cssHtmlId = trim($cssId[0] ?? '');
     $cssClass  = trim($cssId[1] ?? '');
 
+    $renderWords = static function(string $value, string $class): string {
+        $words = explode(' ', $value);
+        sort($words);
+        return '<code class="' . $class . '">' . implode(' ', array_map(
+            fn($w) => '<span>' . htmlspecialchars($w) . '</span>',
+            $words
+        )) . '</code>';
+    };
+
     if ($cssHtmlId !== '') {
-        $parts[] = 'cssID: <code>' . htmlspecialchars($cssHtmlId) . '</code>';
+        $parts[] = '<span>cssID:</span> ' . $renderWords($cssHtmlId, 'cssID');
     }
     if ($cssClass !== '') {
-        $parts[] = 'cssClass: <code>' . htmlspecialchars($cssClass) . '</code>';
+        $parts[] = '<span>cssClass:</span> ' . $renderWords($cssClass, 'cssClass');
     }
 
     // Count child elements (element_group only)
@@ -44,7 +64,7 @@ $GLOBALS['TL_DCA']['tl_content']['list']['sorting']['child_record_callback'] = s
     if ($parts !== []) {
         $label = preg_replace(
             '/(<div class="cte_type [^"]*">)(.*?)(<\/div>)/s',
-            '$1$2 <span style="opacity:.6"> | ' . implode(' | ', $parts) . '</span>$3',
+            '$1$2$3<div class="cssIdClassWrapper"><span class="cssIdClass" style="opacity:.6">' . implode('<span class="divider"> | </span>', $parts) . '</span></div>',
             $label,
             1
         ) ?? $label;
